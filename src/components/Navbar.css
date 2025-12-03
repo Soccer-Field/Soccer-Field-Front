@@ -1,0 +1,35 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 81px;
+  background: white;
+  display: flex;
+  align-items: center;
+  padding: 0 65px;
+  z-index: 1000;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+}
+
+.navbar-content {
+  display: flex;
+  gap: 90px;
+}
+
+.nav-link {
+  font-size: 20px;
+  font-weight: 500;
+  color: #000;
+  text-decoration: none;
+  padding: 8px 0;
+  transition: opacity 0.2s;
+}
+
+.nav-link:hover {
+  opacity: 0.7;
+}
+
+.nav-link.active {
+  font-weight: 600;
+}
