@@ -44,3 +44,50 @@ export const GRASS_TYPES: Record<GrassType, { label: string; description: string
   MG: { label: 'MG', description: '맨땅용' },
   TF: { label: 'TF', description: '풋살용' },
 };
+
+// 새로운 타입 추가
+export interface FieldData {
+  id: string;
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+  image: string;
+  grassType: {
+    code: string;
+    name: string;
+  };
+  shoeType: {
+    code: string;
+    name: string;
+  };
+  grassCondition: {
+    hard: number;
+    short: number;
+    slippery: number;
+    bumpy: number;
+  };
+  rating: {
+    average: number;
+    distribution: {
+      5: number;
+      4: number;
+      3: number;
+      2: number;
+      1: number;
+    };
+  };
+}
+
+export interface ReviewData {
+  id: string;
+  fieldId: string;
+  author: string;
+  grassType: GrassType;
+  rating: number;
+  grassConditions: GrassCondition[];
+  recommendedShoe: GrassType;
+  shoeLink?: string;
+  content: string;
+  createdAt: string;
+}
