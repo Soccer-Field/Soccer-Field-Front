@@ -1,0 +1,410 @@
+/* 사이드바 오버레이 */
+.field-sidebar-overlay {
+  position: fixed;
+  top: 81px;
+  left: 0;
+  bottom: 0;
+  width: 580px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.field-sidebar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 580px;
+  background: white;
+  box-shadow: 0px 10px 20px 0px rgba(0, 0, 0, 0.25);
+  overflow-y: auto;
+  pointer-events: auto;
+  padding: 40px 45px 40px;
+}
+
+.back-button {
+  position: absolute;
+  left: 45px;
+  top: 40px;
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 10;
+}
+
+.back-button:hover {
+  opacity: 0.7;
+}
+
+.field-image-container {
+  width: 100%;
+  height: 320px;
+  margin: 70px 0 0;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.field-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.field-name {
+  font-family: 'S-Core Dream', sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.2;
+  margin: 35px 0 0;
+}
+
+.field-address {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-family: 'S-Core Dream', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.field-address svg {
+  width: 11px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* 잔디종류 & 추천 축구화 */
+.field-types-section {
+  display: flex;
+  gap: 30px;
+  margin-top: 40px;
+  justify-content: center;
+}
+
+.type-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.type-label {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.type-badge {
+  width: 110px;
+  height: 95px;
+  border: 3px solid #d4d4d4;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.type-code {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 32px;
+}
+
+.type-name {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* 잔디 상태 특징 */
+.grass-condition-section {
+  margin-top: 30px;
+  background: #f7f7f7;
+  border-radius: 14px;
+  padding: 24px 20px;
+  width: 100%;
+}
+
+.section-title {
+  font-family: 'S-Core Dream', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
+.condition-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+}
+
+/* 도넛 차트 */
+.donut-chart {
+  width: 220px;
+  height: 220px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.chart-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.chart-labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.label {
+  position: absolute;
+  font-family: 'S-Core Dream', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  color: white;
+  white-space: nowrap;
+}
+
+.label-hard {
+  top: 71%;
+  left: 15%;
+}
+
+.label-short {
+  bottom: 8%;
+  right: 24%;
+}
+
+.label-slippery {
+  top: 43%;
+  right: 23%;
+}
+
+.label-bumpy {
+  top: 45%;
+  left: 4%;
+}
+
+/* 막대 리스트 - 박스 형태 */
+.condition-bars {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.condition-bar-item {
+  background: white;
+  border: 1px solid #cdcdcd;
+  border-radius: 6px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  position: relative;
+}
+
+.condition-bar-item:first-child {
+  background: #bfffc2;
+  border-color: #4dcc86;
+}
+
+.bar-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bar-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+.bar-label span {
+  font-family: 'S-Core Dream', sans-serif;
+  font-size: 13px;
+  color: #6a567e;
+  line-height: 16px;
+}
+
+.bar-percentage {
+  position: absolute;
+  right: 12px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  color: #6a567e;
+}
+
+/* 잔디 상태 평가 */
+.rating-section {
+  margin-top: 25px;
+  background: #f7f7f7;
+  border-radius: 14px;
+  padding: 24px 20px;
+  width: 100%;
+}
+
+.rating-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+}
+
+/* 별점 요약 */
+.rating-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.star-rating {
+  display: flex;
+  gap: 4px;
+}
+
+.star-rating svg {
+  width: 22px;
+  height: 22px;
+}
+
+.rating-average {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 36px;
+  margin-top: 10px;
+}
+
+.rating-label {
+  font-family: 'S-Core Dream', sans-serif;
+  font-weight: 300;
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+/* 평점 분포 */
+.rating-distribution {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.distribution-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 16px;
+}
+
+.star-label {
+  font-family: 'S-Core Dream', sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  color: #4b5563;
+  width: 32px;
+  text-align: left;
+}
+
+.distribution-bar {
+  flex: 1;
+  height: 7px;
+  background: #e5e7eb;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.distribution-fill {
+  height: 100%;
+  background: #10b981;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+.distribution-count {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: #6b7280;
+  width: 32px;
+  text-align: right;
+}
+
+/* 액션 버튼 */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 50px;
+  justify-content: center;
+}
+
+.btn-outline {
+  flex: 1;
+  height: 50px;
+  background: white;
+  border: 1px solid black;
+  border-radius: 14px;
+  font-family: 'S-Core Dream', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-outline:hover {
+  background: #f9f9f9;
+}
+
+.btn-primary {
+  flex: 1;
+  height: 50px;
+  background: #3be878;
+  border: none;
+  border-radius: 14px;
+  font-family: 'S-Core Dream', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background: #2dd968;
+}
+
+/* 스크롤바 */
+.field-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.field-sidebar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.field-sidebar::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.field-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
