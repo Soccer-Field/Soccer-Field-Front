@@ -1,5 +1,44 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400&display=swap');
 @import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
+
+/* S-Core Dream 폰트 */
+@font-face {
+  font-family: 'S-Core Dream';
+  font-weight: 300;
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'S-Core Dream';
+  font-weight: 400;
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-4Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'S-Core Dream';
+  font-weight: 500;
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-5Medium.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'S-Core Dream';
+  font-weight: 600;
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-6Bold.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'S-Core Dream';
+  font-weight: 700;
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-6Bold.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'S-Core Dream';
+  font-weight: 800;
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-7ExtraBold.woff') format('woff');
+}
 
 :root {
   --primary-color: #4ade80;
