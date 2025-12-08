@@ -91,3 +91,11 @@ export interface ReviewData {
   content: string;
   createdAt: string;
 }
+
+export interface CommentData {
+  id: string;
+  reviewId: string;
+  author: string;
+  content: string;
+  createdAt: string;
+}

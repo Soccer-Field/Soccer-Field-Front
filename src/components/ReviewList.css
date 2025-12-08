@@ -79,7 +79,12 @@
 .review-header {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 16px;
+}
+
+.author-info {
+  flex: 1;
 }
 
 .author-name {
@@ -96,9 +101,48 @@
   margin-top: 4px;
 }
 
+.review-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .review-rating {
   display: flex;
   gap: 4px;
+}
+
+.review-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #6b7280;
+}
+
+.action-btn:hover {
+  background: #f9fafb;
+}
+
+.edit-btn:hover {
+  border-color: #3be878;
+  color: #3be878;
+}
+
+.delete-btn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
 }
 
 .review-types {
@@ -221,4 +265,61 @@
   font-size: 12px;
   color: #6b7280;
   padding: 0;
+}
+
+.review-edit-form {
+  margin-bottom: 12px;
+}
+
+.review-edit-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.review-edit-textarea:focus {
+  border-color: #3be878;
+}
+
+.review-edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  justify-content: flex-end;
+}
+
+.btn-cancel-edit,
+.btn-save-edit {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel-edit {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+}
+
+.btn-cancel-edit:hover {
+  background: #f9fafb;
+}
+
+.btn-save-edit {
+  background: #3be878;
+  border: none;
+  color: white;
+}
+
+.btn-save-edit:hover {
+  background: #2dd869;
 }

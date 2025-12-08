@@ -1,12 +1,21 @@
-import { ArrowLeft, X, ThumbsUp, ExternalLink } from 'lucide-react';
-import type { ReviewData } from '../types';
+import { useState } from 'react';
+import { ArrowLeft, X, ThumbsUp, ExternalLink, Edit2, Trash2 } from 'lucide-react';
+import type { ReviewData, CommentData } from '../types';
+import { ReviewComments } from './ReviewComments';
 import './ReviewList.css';
 
 interface ReviewListProps {
   fieldName: string;
   reviews: ReviewData[];
+  comments: CommentData[];
+  currentUser: string;
   onClose: () => void;
   onBack: () => void;
+  onCommentSubmit: (reviewId: string, content: string) => void;
+  onReviewEdit: (reviewId: string, content: string) => void;
+  onReviewDelete: (reviewId: string) => void;
+  onCommentEdit: (commentId: string, content: string) => void;
+  onCommentDelete: (commentId: string) => void;
 }
 
 const CONDITION_COLORS: Record<string, string> = {
@@ -25,7 +34,34 @@ const formatDate = (dateString: string) => {
   return date.toISOString().split('T')[0];
 };
 
-export const ReviewList = ({ fieldName, reviews, onClose, onBack }: ReviewListProps) => {
+export const ReviewList = ({ reviews, comments, currentUser, onClose, onBack, onCommentSubmit, onReviewEdit, onReviewDelete, onCommentEdit, onCommentDelete }: ReviewListProps) => {
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
+
+  const handleEditReview = (reviewId: string, currentContent: string) => {
+    setEditingReviewId(reviewId);
+    setEditContent(currentContent);
+  };
+
+  const handleSaveEdit = (reviewId: string) => {
+    if (editContent.trim()) {
+      onReviewEdit(reviewId, editContent.trim());
+      setEditingReviewId(null);
+      setEditContent('');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingReviewId(null);
+    setEditContent('');
+  };
+
+  const handleDeleteReview = (reviewId: string) => {
+    if (window.confirm('리뷰를 삭제하시겠습니까?')) {
+      onReviewDelete(reviewId);
+    }
+  };
+
   return (
     <div className="review-list-overlay">
       <div className="review-list-container">
@@ -64,12 +100,32 @@ export const ReviewList = ({ fieldName, reviews, onClose, onBack }: ReviewListPr
                         <span>{formatDate(review.createdAt)}</span>
                       </div>
                     </div>
-                    <div className="review-rating">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <svg key={star} width="16" height="16" viewBox="0 0 16 16" fill={star <= review.rating ? '#fbbf24' : '#e5e7eb'}>
-                          <path d="M8 1L10.09 5.26L15 5.27L11 8.14L12.18 13.02L8 10.77L3.82 13.02L5 8.14L1 5.27L5.91 5.26L8 1Z" />
-                        </svg>
-                      ))}
+                    <div className="review-header-right">
+                      <div className="review-rating">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <svg key={star} width="16" height="16" viewBox="0 0 16 16" fill={star <= review.rating ? '#fbbf24' : '#e5e7eb'}>
+                            <path d="M8 1L10.09 5.26L15 5.27L11 8.14L12.18 13.02L8 10.77L3.82 13.02L5 8.14L1 5.27L5.91 5.26L8 1Z" />
+                          </svg>
+                        ))}
+                      </div>
+                      {review.author === currentUser && (
+                        <div className="review-actions">
+                          <button
+                            className="action-btn edit-btn"
+                            onClick={() => handleEditReview(review.id, review.content)}
+                            title="수정"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            className="action-btn delete-btn"
+                            onClick={() => handleDeleteReview(review.id)}
+                            title="삭제"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -107,7 +163,26 @@ export const ReviewList = ({ fieldName, reviews, onClose, onBack }: ReviewListPr
                   )}
 
                   {/* 리뷰 내용 */}
-                  <div className="review-content">{review.content}</div>
+                  {editingReviewId === review.id ? (
+                    <div className="review-edit-form">
+                      <textarea
+                        className="review-edit-textarea"
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        rows={4}
+                      />
+                      <div className="review-edit-actions">
+                        <button className="btn-cancel-edit" onClick={handleCancelEdit}>
+                          취소
+                        </button>
+                        <button className="btn-save-edit" onClick={() => handleSaveEdit(review.id)}>
+                          저장
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="review-content">{review.content}</div>
+                  )}
 
                   {/* 추천 축구화 링크 */}
                   {review.shoeLink && (
@@ -126,6 +201,16 @@ export const ReviewList = ({ fieldName, reviews, onClose, onBack }: ReviewListPr
                     <ThumbsUp size={16} />
                     <span>도움됨 0</span>
                   </button>
+
+                  {/* 댓글 섹션 */}
+                  <ReviewComments
+                    reviewId={review.id}
+                    comments={comments.filter((c) => c.reviewId === review.id)}
+                    currentUser={currentUser}
+                    onSubmitComment={onCommentSubmit}
+                    onEditComment={onCommentEdit}
+                    onDeleteComment={onCommentDelete}
+                  />
                 </div>
               ))
             )}
