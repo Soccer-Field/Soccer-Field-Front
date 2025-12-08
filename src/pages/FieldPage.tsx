@@ -1,9 +1,12 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { FormEvent } from 'react';
 import { MapContainer, TileLayer, Marker, Tooltip } from 'react-leaflet';
 import { Search } from 'lucide-react';
 import { FieldSidebar } from '../components/FieldSidebar';
 import type { ReviewFormData } from '../components/ReviewModal';
-import type { FieldData, ReviewData } from '../types/index';
+import { AddFieldModal } from '../components/AddFieldModal';
+import type { AddFieldFormData } from '../components/AddFieldModal';
+import type { FieldData, ReviewData, CommentData } from '../types/index';
 import 'leaflet/dist/leaflet.css';
 import './FieldPage.css';
 import L from 'leaflet';
@@ -77,12 +80,31 @@ const initialMockReviews: ReviewData[] = [
   },
 ];
 
+const initialMockComments: CommentData[] = [
+  {
+    id: '1',
+    reviewId: '1',
+    author: '김민수',
+    content: '저도 같은 생각입니다! AG 축구화 추천 감사해요.',
+    createdAt: '2024-01-21T14:20:00Z',
+  },
+  {
+    id: '2',
+    reviewId: '1',
+    author: '이서연',
+    content: '여기 정말 관리 잘 되어있더라구요~',
+    createdAt: '2024-01-22T09:15:00Z',
+  },
+];
+
 export const FieldPage = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedField, setSelectedField] = useState<FieldData | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [fields, setFields] = useState<FieldData[]>(initialMockFields);
   const [reviews, setReviews] = useState<ReviewData[]>(initialMockReviews);
+  const [comments, setComments] = useState<CommentData[]>(initialMockComments);
+  const [showAddFieldModal, setShowAddFieldModal] = useState(false);
   const mapRef = useRef<L.Map | null>(null);
 
   const filteredFields = useMemo(() => {
@@ -117,6 +139,12 @@ export const FieldPage = () => {
     } else {
       setShowResults(false);
     }
+  };
+
+  const handleAddField = (fieldData: AddFieldFormData) => {
+    // 실제로는 서버에 등록 요청을 보내야 하지만, 지금은 로컬에서 처리
+    alert(`등록 요청이 전송되었습니다!\n\n축구장 이름: ${fieldData.name}\n주소: ${fieldData.address}\n이미지 URL: ${fieldData.imageUrl}\n잔디 종류: ${fieldData.grassType}\n추천 축구화: ${fieldData.recommendedShoe}\n\n관리자 승인 후 지도에 표시됩니다.`);
+    setShowAddFieldModal(false);
   };
 
   const handleReviewSubmit = (fieldId: string, reviewData: ReviewFormData) => {
@@ -173,6 +201,44 @@ export const FieldPage = () => {
     alert('리뷰가 성공적으로 등록되었습니다!');
   };
 
+  const handleCommentSubmit = (reviewId: string, content: string) => {
+    const newComment: CommentData = {
+      id: Date.now().toString(),
+      reviewId,
+      author: '사용자',
+      content,
+      createdAt: new Date().toISOString(),
+    };
+
+    setComments([...comments, newComment]);
+  };
+
+  const handleReviewEdit = (reviewId: string, newContent: string) => {
+    setReviews(
+      reviews.map((review) =>
+        review.id === reviewId ? { ...review, content: newContent } : review
+      )
+    );
+  };
+
+  const handleReviewDelete = (reviewId: string) => {
+    setReviews(reviews.filter((review) => review.id !== reviewId));
+    // 해당 리뷰의 댓글도 삭제
+    setComments(comments.filter((comment) => comment.reviewId !== reviewId));
+  };
+
+  const handleCommentEdit = (commentId: string, newContent: string) => {
+    setComments(
+      comments.map((comment) =>
+        comment.id === commentId ? { ...comment, content: newContent } : comment
+      )
+    );
+  };
+
+  const handleCommentDelete = (commentId: string) => {
+    setComments(comments.filter((comment) => comment.id !== commentId));
+  };
+
   useEffect(() => {
     if (!selectedField || !mapRef.current) return;
     mapRef.current.flyTo([selectedField.lat, selectedField.lng], 14, {
@@ -215,7 +281,9 @@ export const FieldPage = () => {
       </div>
 
       {/* 축구장 추가 버튼 */}
-      <button className="add-field-btn">축구장 추가</button>
+      <button className="add-field-btn" onClick={() => setShowAddFieldModal(true)}>
+        축구장 추가
+      </button>
 
       {/* 지도 */}
       <div
@@ -233,9 +301,7 @@ export const FieldPage = () => {
           center={[fields[0].lat, fields[0].lng]}
           zoom={7}
           style={{ width: '100%', height: '100%' }}
-          whenCreated={(mapInstance) => {
-            mapRef.current = mapInstance;
-          }}
+          ref={mapRef}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -271,8 +337,22 @@ export const FieldPage = () => {
         <FieldSidebar
           field={selectedField}
           reviews={reviews.filter((r) => r.fieldId === selectedField.id)}
+          comments={comments}
           onClose={handleCloseSidebar}
           onReviewSubmit={(reviewData) => handleReviewSubmit(selectedField.id, reviewData)}
+          onCommentSubmit={handleCommentSubmit}
+          onReviewEdit={handleReviewEdit}
+          onReviewDelete={handleReviewDelete}
+          onCommentEdit={handleCommentEdit}
+          onCommentDelete={handleCommentDelete}
+        />
+      )}
+
+      {/* 축구장 추가 모달 */}
+      {showAddFieldModal && (
+        <AddFieldModal
+          onClose={() => setShowAddFieldModal(false)}
+          onSubmit={handleAddField}
         />
       )}
     </div>
