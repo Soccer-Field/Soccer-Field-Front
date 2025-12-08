@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import type { FieldData, ReviewData } from '../types/index';
+import type { FieldData, ReviewData, CommentData } from '../types/index';
 import { ReviewModal } from './ReviewModal';
 import type { ReviewFormData } from './ReviewModal';
 import { ReviewList } from './ReviewList';
@@ -9,11 +9,17 @@ import './FieldSidebar.css';
 interface FieldSidebarProps {
   field: FieldData;
   reviews: ReviewData[];
+  comments: CommentData[];
   onClose: () => void;
   onReviewSubmit: (reviewData: ReviewFormData) => void;
+  onCommentSubmit: (reviewId: string, content: string) => void;
+  onReviewEdit: (reviewId: string, content: string) => void;
+  onReviewDelete: (reviewId: string) => void;
+  onCommentEdit: (commentId: string, content: string) => void;
+  onCommentDelete: (commentId: string) => void;
 }
 
-export const FieldSidebar = ({ field, reviews, onClose, onReviewSubmit }: FieldSidebarProps) => {
+export const FieldSidebar = ({ field, reviews, comments, onClose, onReviewSubmit, onCommentSubmit, onReviewEdit, onReviewDelete, onCommentEdit, onCommentDelete }: FieldSidebarProps) => {
   const totalReviews = Object.values(field.rating.distribution).reduce((a, b) => a + b, 0);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showReviewList, setShowReviewList] = useState(false);
@@ -29,8 +35,15 @@ export const FieldSidebar = ({ field, reviews, onClose, onReviewSubmit }: FieldS
       <ReviewList
         fieldName={field.name}
         reviews={reviews}
+        comments={comments}
+        currentUser="사용자"
         onClose={onClose}
         onBack={() => setShowReviewList(false)}
+        onCommentSubmit={onCommentSubmit}
+        onReviewEdit={onReviewEdit}
+        onReviewDelete={onReviewDelete}
+        onCommentEdit={onCommentEdit}
+        onCommentDelete={onCommentDelete}
       />
     );
   }
