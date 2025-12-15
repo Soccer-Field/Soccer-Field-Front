@@ -6,11 +6,16 @@ import './Navbar.css';
 export const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      navigate('/');
+    }
   };
 
   return (
@@ -24,14 +29,22 @@ export const Navbar = () => {
             Home
           </Link>
           <Link
-            to="/field"
-            className={`nav-link ${location.pathname === '/field' ? 'active' : ''}`}
+            to="/fields"
+            className={`nav-link ${location.pathname === '/fields' ? 'active' : ''}`}
           >
             Field
           </Link>
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className={`nav-link ${location.pathname === '/admin' ? 'active' : ''}`}
+            >
+              Admin
+            </Link>
+          )}
         </div>
         <div className="nav-user">
-          <span className="user-name">{user?.name}</span>
+          <span className="user-name">{user?.name}님</span>
           <button className="logout-btn" onClick={handleLogout}>
             <LogOut size={18} />
             로그아웃

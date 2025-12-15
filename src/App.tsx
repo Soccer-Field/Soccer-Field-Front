@@ -4,11 +4,13 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { Navbar } from './components/Navbar';
 import { HomePage } from './pages/HomePage';
 import { FieldPage } from './pages/FieldPage';
-import { AuthPage } from './pages/AuthPage';
+import { LoginPage } from './pages/LoginPage';
+import { SignupPage } from './pages/SignupPage';
+import { AdminPage } from './pages/AdminPage';
 import './App.css';
 
 function AppRoutes() {
-  const { isAuthenticated, login, signup } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   return (
     <div className="app">
@@ -16,20 +18,38 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route
-          path="/auth"
+          path="/login"
           element={
             isAuthenticated ? (
-              <Navigate to="/field" replace />
+              <Navigate to="/fields" replace />
             ) : (
-              <AuthPage onLogin={login} onSignup={signup} />
+              <LoginPage />
             )
           }
         />
         <Route
-          path="/field"
+          path="/signup"
+          element={
+            isAuthenticated ? (
+              <Navigate to="/fields" replace />
+            ) : (
+              <SignupPage />
+            )
+          }
+        />
+        <Route
+          path="/fields"
           element={
             <ProtectedRoute>
               <FieldPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminPage />
             </ProtectedRoute>
           }
         />
