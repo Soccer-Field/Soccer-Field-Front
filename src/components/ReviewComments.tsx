@@ -13,7 +13,7 @@ interface ReviewCommentsProps {
   onDeleteComment: (commentId: string, reviewId: string) => void;
 }
 
-export const ReviewComments = ({ reviewId, comments, currentUserId, currentUserName, onSubmitComment, onEditComment, onDeleteComment }: ReviewCommentsProps) => {
+export const ReviewComments = ({ reviewId, comments, currentUserId, onSubmitComment, onEditComment, onDeleteComment }: ReviewCommentsProps) => {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);

@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+import type { InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -12,24 +13,24 @@ export const apiClient = axios.create({
 
 // 요청 인터셉터 - 인증 토큰 추가
 apiClient.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
+  (error: AxiosError) => {
     return Promise.reject(error);
   }
 );
 
 // 응답 인터셉터 - 에러 처리
 apiClient.interceptors.response.use(
-  (response) => {
+  (response: AxiosResponse) => {
     return response;
   },
-  (error) => {
+  (error: AxiosError) => {
     if (error.response) {
       // 서버에서 응답이 온 경우
       console.error('API Error:', error.response.data);

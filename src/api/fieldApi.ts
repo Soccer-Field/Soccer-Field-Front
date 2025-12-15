@@ -71,7 +71,7 @@ export interface FieldDetail extends Field {
 export const getFields = async (): Promise<Field[]> => {
   const response = await apiClient.get<FieldListResponseDto[]>('/fields');
 
-  return response.data.map(field => ({
+  return response.data.map((field: FieldListResponseDto) => ({
     id: field.id.toString(),
     name: field.name,
     address: field.address,
@@ -112,7 +112,7 @@ export const searchFields = async (keyword: string): Promise<Field[]> => {
     params: { keyword },
   });
 
-  return response.data.map(field => ({
+  return response.data.map((field: FieldListResponseDto) => ({
     id: field.id.toString(),
     name: field.name,
     address: field.address,
@@ -139,7 +139,7 @@ export const createField = async (data: CreateFieldDto): Promise<CreateFieldResp
 export const getPendingFields = async (): Promise<Field[]> => {
   const response = await apiClient.get<FieldListResponseDto[]>('/fields/pending');
 
-  return response.data.map(field => ({
+  return response.data.map((field: FieldListResponseDto) => ({
     id: field.id.toString(),
     name: field.name,
     address: field.address,

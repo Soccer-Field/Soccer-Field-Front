@@ -40,7 +40,7 @@ export const getReviews = async (fieldId: string, lastId?: number): Promise<Revi
   const response = await apiClient.get<ReviewResponseDto[]>(`/fields/${fieldId}/reviews`, { params });
 
   // 백엔드 응답을 프론트엔드 타입으로 변환
-  return response.data.map(review => ({
+  return response.data.map((review: ReviewResponseDto) => ({
     id: review.reviewId.toString(),
     fieldId: review.fieldId.toString(),
     userId: review.userId.toString(),

@@ -39,7 +39,7 @@ export const getComments = async (reviewId: string): Promise<CommentData[]> => {
   const rootComments: CommentData[] = [];
 
   // 먼저 모든 댓글을 맵에 저장
-  response.data.forEach(comment => {
+  response.data.forEach((comment: CommentResponseDto) => {
     const commentData: CommentData = {
       id: comment.commentId.toString(),
       reviewId: comment.reviewId.toString(),
