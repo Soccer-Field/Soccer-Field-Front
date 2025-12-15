@@ -1,17 +1,22 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import * as authApi from '../api/authApi';
 
 interface User {
+  userId: string;
   email: string;
   name: string;
+  role: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => void;
-  signup: (email: string, password: string, name: string) => void;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string, name: string) => Promise<void>;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
+  isAdmin: boolean;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,59 +35,74 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 로컬 스토리지에서 사용자 정보 불러오기
+  // 초기화: 토큰이 있으면 사용자 정보 복원
   useEffect(() => {
+    const token = authApi.getStoredToken();
     const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+
+    if (token && savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Failed to parse saved user:', error);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
     }
+
+    setIsLoading(false);
   }, []);
 
-  const login = (email: string, password: string) => {
-    // 실제로는 서버에 로그인 요청을 보내야 함
-    // 여기서는 로컬 스토리지에서 사용자 확인
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const foundUser = users.find(
-      (u: any) => u.email === email && u.password === password
-    );
+  const login = async (email: string, password: string) => {
+    try {
+      const userData = await authApi.login({ email, password });
 
-    if (foundUser) {
-      const userData = { email: foundUser.email, name: foundUser.name };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      alert('로그인 성공!');
-    } else {
-      alert('이메일 또는 비밀번호가 올바르지 않습니다.');
+      const user: User = {
+        userId: userData.userId,
+        email: userData.email,
+        name: userData.name,
+        role: userData.role,
+      };
+
+      setUser(user);
+      localStorage.setItem('user', JSON.stringify(user));
+    } catch (error: any) {
+      console.error('Login failed:', error);
+      throw error;
     }
   };
 
-  const signup = (email: string, password: string, name: string) => {
-    // 실제로는 서버에 회원가입 요청을 보내야 함
-    // 여기서는 로컬 스토리지에 저장
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
+  const signup = async (email: string, password: string, name: string) => {
+    try {
+      const userData = await authApi.signup({ email, password, name });
 
-    // 이메일 중복 체크
-    if (users.some((u: any) => u.email === email)) {
-      alert('이미 등록된 이메일입니다.');
-      return;
+      const user: User = {
+        userId: userData.userId,
+        email: userData.email,
+        name: userData.name,
+        role: userData.role,
+      };
+
+      setUser(user);
+      localStorage.setItem('user', JSON.stringify(user));
+    } catch (error: any) {
+      console.error('Signup failed:', error);
+      throw error;
     }
-
-    const newUser = { email, password, name };
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-
-    // 회원가입 후 자동 로그인
-    const userData = { email, name };
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-    alert('회원가입이 완료되었습니다!');
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-    alert('로그아웃되었습니다.');
+  const logout = async () => {
+    try {
+      await authApi.logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    } finally {
+      setUser(null);
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    }
   };
 
   const value = {
@@ -90,7 +110,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     login,
     signup,
     logout,
-    isAuthenticated: !!user,
+    isAuthenticated: !!user && !!authApi.getStoredToken(),
+    isAdmin: user?.role === 'ADMIN',
+    isLoading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

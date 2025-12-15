@@ -10,16 +10,18 @@ interface FieldSidebarProps {
   field: FieldData;
   reviews: ReviewData[];
   comments: CommentData[];
+  currentUserId: string;
+  currentUserName: string;
   onClose: () => void;
   onReviewSubmit: (reviewData: ReviewFormData) => void;
-  onCommentSubmit: (reviewId: string, content: string) => void;
+  onCommentSubmit: (reviewId: string, content: string, parentId?: string) => Promise<boolean>;
   onReviewEdit: (reviewId: string, content: string) => void;
   onReviewDelete: (reviewId: string) => void;
-  onCommentEdit: (commentId: string, content: string) => void;
-  onCommentDelete: (commentId: string) => void;
+  onCommentEdit: (commentId: string, content: string, reviewId: string) => void;
+  onCommentDelete: (commentId: string, reviewId: string) => void;
 }
 
-export const FieldSidebar = ({ field, reviews, comments, onClose, onReviewSubmit, onCommentSubmit, onReviewEdit, onReviewDelete, onCommentEdit, onCommentDelete }: FieldSidebarProps) => {
+export const FieldSidebar = ({ field, reviews, comments, currentUserId, currentUserName, onClose, onReviewSubmit, onCommentSubmit, onReviewEdit, onReviewDelete, onCommentEdit, onCommentDelete }: FieldSidebarProps) => {
   const totalReviews = Object.values(field.rating.distribution).reduce((a, b) => a + b, 0);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showReviewList, setShowReviewList] = useState(false);
@@ -36,7 +38,8 @@ export const FieldSidebar = ({ field, reviews, comments, onClose, onReviewSubmit
         fieldName={field.name}
         reviews={reviews}
         comments={comments}
-        currentUser="사용자"
+        currentUserId={currentUserId}
+        currentUserName={currentUserName}
         onClose={onClose}
         onBack={() => setShowReviewList(false)}
         onCommentSubmit={onCommentSubmit}

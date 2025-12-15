@@ -82,6 +82,7 @@ export interface FieldData {
 export interface ReviewData {
   id: string;
   fieldId: string;
+  userId: string;
   author: string;
   grassType: GrassType;
   rating: number;
@@ -95,7 +96,10 @@ export interface ReviewData {
 export interface CommentData {
   id: string;
   reviewId: string;
+  userId: string;
   author: string;
   content: string;
   createdAt: string;
+  parentId?: string;
+  replies?: CommentData[];
 }

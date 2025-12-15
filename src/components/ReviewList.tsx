@@ -8,14 +8,15 @@ interface ReviewListProps {
   fieldName: string;
   reviews: ReviewData[];
   comments: CommentData[];
-  currentUser: string;
+  currentUserId: string;
+  currentUserName: string;
   onClose: () => void;
   onBack: () => void;
-  onCommentSubmit: (reviewId: string, content: string) => void;
+  onCommentSubmit: (reviewId: string, content: string, parentId?: string) => Promise<boolean>;
   onReviewEdit: (reviewId: string, content: string) => void;
   onReviewDelete: (reviewId: string) => void;
-  onCommentEdit: (commentId: string, content: string) => void;
-  onCommentDelete: (commentId: string) => void;
+  onCommentEdit: (commentId: string, content: string, reviewId: string) => void;
+  onCommentDelete: (commentId: string, reviewId: string) => void;
 }
 
 const CONDITION_COLORS: Record<string, string> = {
@@ -34,7 +35,7 @@ const formatDate = (dateString: string) => {
   return date.toISOString().split('T')[0];
 };
 
-export const ReviewList = ({ reviews, comments, currentUser, onClose, onBack, onCommentSubmit, onReviewEdit, onReviewDelete, onCommentEdit, onCommentDelete }: ReviewListProps) => {
+export const ReviewList = ({ reviews, comments, currentUserId, currentUserName, onClose, onBack, onCommentSubmit, onReviewEdit, onReviewDelete, onCommentEdit, onCommentDelete }: ReviewListProps) => {
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
 
@@ -108,7 +109,7 @@ export const ReviewList = ({ reviews, comments, currentUser, onClose, onBack, on
                           </svg>
                         ))}
                       </div>
-                      {review.author === currentUser && (
+                      {review.userId === currentUserId && (
                         <div className="review-actions">
                           <button
                             className="action-btn edit-btn"
@@ -206,7 +207,8 @@ export const ReviewList = ({ reviews, comments, currentUser, onClose, onBack, on
                   <ReviewComments
                     reviewId={review.id}
                     comments={comments.filter((c) => c.reviewId === review.id)}
-                    currentUser={currentUser}
+                    currentUserId={currentUserId}
+                    currentUserName={currentUserName}
                     onSubmitComment={onCommentSubmit}
                     onEditComment={onCommentEdit}
                     onDeleteComment={onCommentDelete}
