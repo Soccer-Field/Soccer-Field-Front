@@ -1,6 +1,18 @@
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import './HomePage.css';
 
 export const HomePage = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  const handleFindFields = () => {
+    if (isAuthenticated) {
+      navigate('/fields');
+    } else {
+      navigate('/login');
+    }
+  };
 
   return (
     <div className="home-page">
@@ -15,7 +27,7 @@ export const HomePage = () => {
             <br />
             최적의 축구화를 선택하세요
           </p>
-          <button className="hero-cta">
+          <button className="hero-cta" onClick={handleFindFields}>
             축구장 찾아보기
           </button>
         </div>
@@ -99,7 +111,7 @@ export const HomePage = () => {
           <p className="cta-description">
             가까운 축구장의 잔디 상태를 확인하고, 최적의 축구화를 선택하세요
           </p>
-          <button className="cta-button">
+          <button className="cta-button" onClick={handleFindFields}>
             축구장 찾아보기
           </button>
         </div>

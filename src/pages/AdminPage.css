@@ -1,0 +1,233 @@
+.admin-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 6rem 1rem 2rem 1rem; /* nav바 높이만큼 상단 패딩 추가 */
+}
+
+.admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.admin-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  color: white;
+}
+
+.admin-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.admin-subtitle {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.loading-message,
+.error-message {
+  text-align: center;
+  padding: 3rem;
+  background: white;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.error-message {
+  color: #e53e3e;
+}
+
+.retry-button {
+  display: block;
+  margin: 1rem auto 0;
+  padding: 0.75rem 2rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.retry-button:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 12px;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.empty-message {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.pending-fields-list {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.list-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.list-header h2 {
+  font-size: 1.5rem;
+  color: #2d3748;
+}
+
+.fields-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+}
+
+.field-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s;
+  background: white;
+}
+
+.field-card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+.field-image-container {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background: #f7fafc;
+}
+
+.field-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.field-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #edf2f7;
+  color: #a0aec0;
+  font-size: 1rem;
+}
+
+.field-info {
+  padding: 1.5rem;
+}
+
+.field-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.field-address {
+  font-size: 0.95rem;
+  color: #718096;
+  margin-bottom: 1rem;
+}
+
+.field-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.detail-label {
+  color: #718096;
+  font-weight: 500;
+}
+
+.detail-value {
+  color: #2d3748;
+  font-weight: 600;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 60%;
+  text-align: right;
+}
+
+.field-actions {
+  padding: 1rem 1.5rem;
+  background: #f7fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.approve-button {
+  width: 100%;
+  padding: 0.75rem;
+  background: #48bb78;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.approve-button:hover:not(:disabled) {
+  background: #38a169;
+  transform: translateY(-2px);
+}
+
+.approve-button:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .admin-page {
+    padding: 1rem 0.5rem;
+  }
+
+  .admin-title {
+    font-size: 2rem;
+  }
+
+  .admin-subtitle {
+    font-size: 1rem;
+  }
+
+  .pending-fields-list {
+    padding: 1rem;
+  }
+
+  .fields-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -7,6 +7,10 @@ import type { ReviewFormData } from '../components/ReviewModal';
 import { AddFieldModal } from '../components/AddFieldModal';
 import type { AddFieldFormData } from '../components/AddFieldModal';
 import type { FieldData, ReviewData, CommentData } from '../types/index';
+import * as fieldApi from '../api/fieldApi';
+import * as reviewApi from '../api/reviewApi';
+import * as commentApi from '../api/commentApi';
+import { useAuth } from '../contexts/AuthContext';
 import 'leaflet/dist/leaflet.css';
 import './FieldPage.css';
 import L from 'leaflet';
@@ -32,80 +36,51 @@ const selectedIcon = new L.Icon({
   iconAnchor: [22, 58],
 });
 
-const initialMockFields: FieldData[] = [
-  {
-    id: '1',
-    name: '을숙도인조잔디축구장',
-    address: '부산광역시 사하구 하단동 낙동남로1233번길 59',
-    lat: 35.0915,
-    lng: 128.9636,
-    image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&h=600&fit=crop',
-    grassType: { code: 'AG', name: '인조잔디' },
-    shoeType: { code: 'TF', name: '풋살용' },
-    grassCondition: { hard: 34, short: 34, slippery: 34, bumpy: 34 },
-    rating: {
-      average: 4.0,
-      distribution: { 5: 0, 4: 1, 3: 0, 2: 0, 1: 0 },
-    },
-  },
-  {
-    id: '2',
-    name: '서울월드컵경기장 보조구장',
-    address: '서울특별시 마포구 성산동',
-    lat: 37.5665,
-    lng: 126.897,
-    image: 'https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=800&h=600&fit=crop',
-    grassType: { code: 'NG', name: '천연잔디' },
-    shoeType: { code: 'FG', name: '천연잔디용' },
-    grassCondition: { hard: 20, short: 30, slippery: 25, bumpy: 25 },
-    rating: {
-      average: 4.5,
-      distribution: { 5: 5, 4: 3, 3: 1, 2: 0, 1: 0 },
-    },
-  },
-];
-
-const initialMockReviews: ReviewData[] = [
-  {
-    id: '1',
-    fieldId: '1',
-    author: '박지훈',
-    grassType: 'AG',
-    rating: 4,
-    grassConditions: ['잔디 김', '관리 양호', '부드러움', '배수 양호'],
-    recommendedShoe: 'AG',
-    shoeLink: 'https://www.adidas.co.kr/predator-accuracy.3-ag',
-    content: '잔디 길이가 적당하고 관리가 잘 되어 있습니다. AG 축구화가 딱 맞아요. 접지력도 좋고 부상 위험도 적습니다.',
-    createdAt: '2024-01-20T10:30:00Z',
-  },
-];
-
-const initialMockComments: CommentData[] = [
-  {
-    id: '1',
-    reviewId: '1',
-    author: '김민수',
-    content: '저도 같은 생각입니다! AG 축구화 추천 감사해요.',
-    createdAt: '2024-01-21T14:20:00Z',
-  },
-  {
-    id: '2',
-    reviewId: '1',
-    author: '이서연',
-    content: '여기 정말 관리 잘 되어있더라구요~',
-    createdAt: '2024-01-22T09:15:00Z',
-  },
-];
-
 export const FieldPage = () => {
+  const { user } = useAuth();
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedField, setSelectedField] = useState<FieldData | null>(null);
   const [showResults, setShowResults] = useState(false);
-  const [fields, setFields] = useState<FieldData[]>(initialMockFields);
-  const [reviews, setReviews] = useState<ReviewData[]>(initialMockReviews);
-  const [comments, setComments] = useState<CommentData[]>(initialMockComments);
+  const [fields, setFields] = useState<FieldData[]>([]);
+  const [reviews, setReviews] = useState<ReviewData[]>([]);
+  const [comments, setComments] = useState<CommentData[]>([]);
   const [showAddFieldModal, setShowAddFieldModal] = useState(false);
+  const [isLoadingFields, setIsLoadingFields] = useState(true);
   const mapRef = useRef<L.Map | null>(null);
+
+  // 백엔드에서 축구장 목록 가져오기
+  useEffect(() => {
+    const fetchFields = async () => {
+      try {
+        setIsLoadingFields(true);
+        const fetchedFields = await fieldApi.getFields();
+
+        const transformedFields: FieldData[] = fetchedFields.map(field => ({
+          id: field.id,
+          name: field.name,
+          address: field.address,
+          lat: field.lat,
+          lng: field.lng,
+          image: field.image || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&h=600&fit=crop',
+          grassType: { code: field.grassType, name: field.grassType },
+          shoeType: { code: field.shoeType, name: field.shoeType },
+          grassCondition: { hard: 0, short: 0, slippery: 0, bumpy: 0 },
+          rating: {
+            average: field.rating,
+            distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+          },
+        }));
+
+        setFields(transformedFields);
+      } catch (error) {
+        console.error('Failed to fetch fields:', error);
+      } finally {
+        setIsLoadingFields(false);
+      }
+    };
+
+    fetchFields();
+  }, []);
 
   const filteredFields = useMemo(() => {
     const keyword = searchKeyword.trim().toLowerCase();
@@ -124,8 +99,80 @@ export const FieldPage = () => {
     setShowResults(false);
   };
 
-  const handleMarkerClick = (field: FieldData) => {
+  const handleMarkerClick = async (field: FieldData) => {
     setSelectedField(field);
+
+    try {
+      // 리뷰 가져오기
+      const fetchedReviews = await reviewApi.getReviewsByFieldId(field.id);
+
+      // 댓글 가져오기
+      const allComments = await Promise.all(
+        fetchedReviews.map((review: ReviewData) => commentApi.getCommentsByReviewId(review.id))
+      );
+      const flattenedComments = allComments.flat();
+
+      // 잔디 상태 퍼센티지 계산
+      const grassConditionCounts = {
+        딱딱함: 0,
+        '잔디 짧음': 0,
+        미끄러움: 0,
+        울퉁불퉁함: 0,
+      };
+
+      let totalConditions = 0;
+      fetchedReviews.forEach((review: ReviewData) => {
+        review.grassConditions.forEach((condition: string) => {
+          if (condition === '딱딱함') {
+            grassConditionCounts.딱딱함++;
+            totalConditions++;
+          } else if (condition === '잔디 짧음') {
+            grassConditionCounts['잔디 짧음']++;
+            totalConditions++;
+          } else if (condition === '미끄러움') {
+            grassConditionCounts.미끄러움++;
+            totalConditions++;
+          } else if (condition === '울퉁불퉁함') {
+            grassConditionCounts.울퉁불퉁함++;
+            totalConditions++;
+          }
+        });
+      });
+
+      const grassCondition = {
+        hard: totalConditions > 0 ? Math.round((grassConditionCounts.딱딱함 / totalConditions) * 100) : 0,
+        short: totalConditions > 0 ? Math.round((grassConditionCounts['잔디 짧음'] / totalConditions) * 100) : 0,
+        slippery: totalConditions > 0 ? Math.round((grassConditionCounts.미끄러움 / totalConditions) * 100) : 0,
+        bumpy: totalConditions > 0 ? Math.round((grassConditionCounts.울퉁불퉁함 / totalConditions) * 100) : 0,
+      };
+
+      // 별점 분포 계산
+      const ratingDistribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+      fetchedReviews.forEach((review: ReviewData) => {
+        ratingDistribution[review.rating as keyof typeof ratingDistribution]++;
+      });
+
+      const totalReviews = fetchedReviews.length;
+      const totalRating = fetchedReviews.reduce((sum, review) => sum + review.rating, 0);
+      const averageRating = totalReviews > 0 ? Math.round((totalRating / totalReviews) * 10) / 10 : 0;
+
+      // 필드 업데이트
+      setSelectedField({
+        ...field,
+        grassCondition,
+        rating: {
+          average: averageRating,
+          distribution: ratingDistribution,
+        },
+      });
+
+      setReviews(fetchedReviews);
+      setComments(flattenedComments);
+    } catch (error) {
+      console.error('Failed to fetch reviews and comments:', error);
+      setReviews([]);
+      setComments([]);
+    }
   };
 
   const handleCloseSidebar = () => {
@@ -141,102 +188,159 @@ export const FieldPage = () => {
     }
   };
 
-  const handleAddField = (fieldData: AddFieldFormData) => {
-    // 실제로는 서버에 등록 요청을 보내야 하지만, 지금은 로컬에서 처리
-    alert(`등록 요청이 전송되었습니다!\n\n축구장 이름: ${fieldData.name}\n주소: ${fieldData.address}\n이미지 URL: ${fieldData.imageUrl}\n잔디 종류: ${fieldData.grassType}\n추천 축구화: ${fieldData.recommendedShoe}\n\n관리자 승인 후 지도에 표시됩니다.`);
-    setShowAddFieldModal(false);
+  const handleAddField = async (fieldData: AddFieldFormData) => {
+    try {
+      await fieldApi.createField({
+        name: fieldData.name,
+        address: fieldData.address,
+        imageUrl: fieldData.imageUrl,
+        grassType: fieldData.grassType,
+        recommendedShoe: fieldData.recommendedShoe,
+      });
+
+      alert('축구장 등록 요청이 전송되었습니다!\n관리자 승인 후 지도에 표시됩니다.');
+      setShowAddFieldModal(false);
+    } catch (error: any) {
+      console.error('Failed to create field:', error);
+      alert('축구장 등록 요청에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
-  const handleReviewSubmit = (fieldId: string, reviewData: ReviewFormData) => {
-    // 새 리뷰 생성
-    const newReview: ReviewData = {
-      id: Date.now().toString(),
-      fieldId,
-      author: '사용자',
-      grassType: reviewData.grassType,
-      rating: reviewData.rating,
-      grassConditions: reviewData.grassConditions,
-      recommendedShoe: reviewData.recommendedShoe,
-      shoeLink: reviewData.shoeLink,
-      content: reviewData.content,
-      createdAt: new Date().toISOString(),
-    };
+  const handleReviewSubmit = async (fieldId: string, reviewData: ReviewFormData) => {
+    try {
+      // API 호출
+      const createdReview = await reviewApi.createReview(fieldId, {
+        content: reviewData.content,
+        rating: reviewData.rating,
+        grassType: reviewData.grassType,
+        grassConditions: reviewData.grassConditions,
+        recommendedShoe: reviewData.recommendedShoe,
+        shoeLink: reviewData.shoeLink,
+      });
 
-    // 리뷰 추가
-    setReviews([...reviews, newReview]);
+      // 리뷰 추가
+      setReviews([...reviews, createdReview]);
 
-    // 해당 필드의 평점 업데이트
-    setFields(
-      fields.map((field) => {
-        if (field.id === fieldId) {
-          const newDistribution = { ...field.rating.distribution };
-          newDistribution[reviewData.rating as keyof typeof newDistribution]++;
+      // 해당 필드의 평점 업데이트
+      setFields(
+        fields.map((field) => {
+          if (field.id === fieldId) {
+            const newDistribution = { ...field.rating.distribution };
+            newDistribution[reviewData.rating as keyof typeof newDistribution]++;
 
-          const totalReviews = Object.values(newDistribution).reduce((a, b) => a + b, 0);
-          const totalRating = Object.entries(newDistribution).reduce(
-            (sum, [rating, count]) => sum + parseInt(rating) * count,
-            0
-          );
-          const newAverage = totalRating / totalReviews;
+            const totalReviews = Object.values(newDistribution).reduce((a, b) => a + b, 0);
+            const totalRating = Object.entries(newDistribution).reduce(
+              (sum, [rating, count]) => sum + parseInt(rating) * count,
+              0
+            );
+            const newAverage = totalRating / totalReviews;
 
-          const updatedField = {
-            ...field,
-            rating: {
-              average: Math.round(newAverage * 10) / 10,
-              distribution: newDistribution,
-            },
-          };
+            const updatedField = {
+              ...field,
+              rating: {
+                average: Math.round(newAverage * 10) / 10,
+                distribution: newDistribution,
+              },
+            };
 
-          // selectedField도 업데이트
-          if (selectedField?.id === fieldId) {
-            setSelectedField(updatedField);
+            // selectedField도 업데이트
+            if (selectedField?.id === fieldId) {
+              setSelectedField(updatedField);
+            }
+
+            return updatedField;
           }
+          return field;
+        })
+      );
 
-          return updatedField;
-        }
-        return field;
-      })
-    );
-
-    alert('리뷰가 성공적으로 등록되었습니다!');
+      alert('리뷰가 성공적으로 등록되었습니다!');
+    } catch (error) {
+      console.error('Failed to create review:', error);
+      alert('리뷰 작성에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
-  const handleCommentSubmit = (reviewId: string, content: string) => {
-    const newComment: CommentData = {
-      id: Date.now().toString(),
-      reviewId,
-      author: '사용자',
-      content,
-      createdAt: new Date().toISOString(),
-    };
+  const handleCommentSubmit = async (reviewId: string, content: string, parentId?: string) => {
+    try {
+      await commentApi.createComment(reviewId, {
+        content,
+        parentId: parentId ? parseInt(parentId) : undefined,
+      });
 
-    setComments([...comments, newComment]);
+      // 댓글 목록 새로고침 (계층 구조 유지를 위해)
+      const updatedComments = await commentApi.getCommentsByReviewId(reviewId);
+      setComments(updatedComments);
+
+      return true; // 성공 시 true 반환
+    } catch (error) {
+      console.error('Failed to create comment:', error);
+      alert('댓글 작성에 실패했습니다. 다시 시도해주세요.');
+      return false; // 실패 시 false 반환
+    }
   };
 
-  const handleReviewEdit = (reviewId: string, newContent: string) => {
-    setReviews(
-      reviews.map((review) =>
-        review.id === reviewId ? { ...review, content: newContent } : review
-      )
-    );
+  const handleReviewEdit = async (reviewId: string, newContent: string) => {
+    try {
+      const review = reviews.find((r) => r.id === reviewId);
+      if (!review) return;
+
+      await reviewApi.updateReview(reviewId, {
+        content: newContent,
+        rating: review.rating,
+        grassType: review.grassType,
+        grassConditions: review.grassConditions,
+        recommendedShoe: review.recommendedShoe,
+        shoeLink: review.shoeLink,
+      });
+
+      setReviews(
+        reviews.map((r) =>
+          r.id === reviewId ? { ...r, content: newContent } : r
+        )
+      );
+    } catch (error) {
+      console.error('Failed to update review:', error);
+      alert('리뷰 수정에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
-  const handleReviewDelete = (reviewId: string) => {
-    setReviews(reviews.filter((review) => review.id !== reviewId));
-    // 해당 리뷰의 댓글도 삭제
-    setComments(comments.filter((comment) => comment.reviewId !== reviewId));
+  const handleReviewDelete = async (reviewId: string) => {
+    try {
+      await reviewApi.deleteReview(reviewId);
+      setReviews(reviews.filter((review) => review.id !== reviewId));
+      // 해당 리뷰의 댓글도 삭제
+      setComments(comments.filter((comment) => comment.reviewId !== reviewId));
+    } catch (error) {
+      console.error('Failed to delete review:', error);
+      alert('리뷰 삭제에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
-  const handleCommentEdit = (commentId: string, newContent: string) => {
-    setComments(
-      comments.map((comment) =>
-        comment.id === commentId ? { ...comment, content: newContent } : comment
-      )
-    );
+  const handleCommentEdit = async (commentId: string, newContent: string, reviewId: string) => {
+    try {
+      await commentApi.updateComment(commentId, { content: newContent });
+
+      // 댓글 목록 새로고침 (계층 구조 유지를 위해)
+      const updatedComments = await commentApi.getCommentsByReviewId(reviewId);
+      setComments(updatedComments);
+    } catch (error) {
+      console.error('Failed to update comment:', error);
+      alert('댓글 수정에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
-  const handleCommentDelete = (commentId: string) => {
-    setComments(comments.filter((comment) => comment.id !== commentId));
+  const handleCommentDelete = async (commentId: string, reviewId: string) => {
+    try {
+      await commentApi.deleteComment(commentId);
+
+      // 댓글 목록 새로고침 (계층 구조 유지를 위해)
+      const updatedComments = await commentApi.getCommentsByReviewId(reviewId);
+      setComments(updatedComments);
+    } catch (error) {
+      console.error('Failed to delete comment:', error);
+      alert('댓글 삭제에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   useEffect(() => {
@@ -297,39 +401,62 @@ export const FieldPage = () => {
           height: 'calc(100vh - 81px)',
         }}
       >
-        <MapContainer
-          center={[fields[0].lat, fields[0].lng]}
-          zoom={7}
-          style={{ width: '100%', height: '100%' }}
-          ref={mapRef}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          {fields.map((field) => (
-            <Marker
-              key={field.id}
-              position={[field.lat, field.lng]}
-              icon={selectedField?.id === field.id ? selectedIcon : customIcon}
-              eventHandlers={{
-                click: () => handleMarkerClick(field),
-              }}
-            >
-              {selectedField?.id === field.id && (
-                <Tooltip
-                  direction="right"
-                  offset={[14, 0]}
-                  opacity={1}
-                  permanent
-                  className="field-name-tooltip"
-                >
-                  {field.name}
-                </Tooltip>
-              )}
-            </Marker>
-          ))}
-        </MapContainer>
+        {isLoadingFields ? (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <p>축구장 목록을 불러오는 중...</p>
+          </div>
+        ) : (
+          <MapContainer
+            center={fields.length > 0 ? [fields[0].lat, fields[0].lng] : [37.5665, 126.9780]}
+            zoom={7}
+            style={{ width: '100%', height: '100%' }}
+            ref={mapRef}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {fields.length === 0 && (
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 1000,
+                background: 'white',
+                padding: '2rem',
+                borderRadius: '12px',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                textAlign: 'center'
+              }}>
+                <p style={{ margin: 0, fontSize: '1.1rem', color: '#666' }}>등록된 축구장이 없습니다.</p>
+                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: '#999' }}>축구장을 추가해보세요!</p>
+              </div>
+            )}
+            {fields.map((field) => (
+              <Marker
+                key={field.id}
+                position={[field.lat, field.lng]}
+                icon={selectedField?.id === field.id ? selectedIcon : customIcon}
+                eventHandlers={{
+                  click: () => handleMarkerClick(field),
+                }}
+              >
+                {selectedField?.id === field.id && (
+                  <Tooltip
+                    direction="right"
+                    offset={[14, 0]}
+                    opacity={1}
+                    permanent
+                    className="field-name-tooltip"
+                  >
+                    {field.name}
+                  </Tooltip>
+                )}
+              </Marker>
+            ))}
+          </MapContainer>
+        )}
       </div>
 
       {/* 사이드바 */}
@@ -338,6 +465,8 @@ export const FieldPage = () => {
           field={selectedField}
           reviews={reviews.filter((r) => r.fieldId === selectedField.id)}
           comments={comments}
+          currentUserId={user?.userId || ''}
+          currentUserName={user?.name || ''}
           onClose={handleCloseSidebar}
           onReviewSubmit={(reviewData) => handleReviewSubmit(selectedField.id, reviewData)}
           onCommentSubmit={handleCommentSubmit}
