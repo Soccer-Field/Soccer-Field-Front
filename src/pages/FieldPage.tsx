@@ -355,7 +355,7 @@ export const FieldPage = () => {
       setIsLoadingReviews(true);
 
       // 마지막 리뷰 ID 가져오기
-      const lastReviewId = reviews.length > 0 ? parseInt(reviews[reviews.length - 1].id) : undefined;
+      const lastReviewId = reviews.length > 0 ? parseInt(reviews[reviews.length - 10].id) : undefined;
 
       // 추가 리뷰 가져오기
       const newReviews = await reviewApi.getReviewsByFieldId(selectedField.id, lastReviewId);
