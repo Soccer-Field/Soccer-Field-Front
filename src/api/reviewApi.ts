@@ -39,7 +39,7 @@ export const getReviews = async (fieldId: string, lastId?: number): Promise<Revi
   const params = lastId ? { lastId } : {};
   const response = await apiClient.get<ReviewResponseDto[]>(`/fields/${fieldId}/reviews`, { params });
 
-  // 백엔드 응답을 프론트엔드 타입으로 변환
+  // 백엔드 응답을 프론트엔드 타입으로 변환 후 순서 뒤집기
   return response.data.map((review: ReviewResponseDto) => ({
     id: review.reviewId.toString(),
     fieldId: review.fieldId.toString(),
@@ -52,7 +52,7 @@ export const getReviews = async (fieldId: string, lastId?: number): Promise<Revi
     shoeLink: review.shoeLink,
     content: review.content,
     createdAt: review.createdAt,
-  }));
+  })).reverse();
 };
 
 // 리뷰 작성
