@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, X, ThumbsUp, ExternalLink, Edit2, Trash2 } from 'lucide-react';
 import type { ReviewData, CommentData } from '../types';
 import { ReviewComments } from './ReviewComments';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import './ReviewList.css';
 
 interface ReviewListProps {
@@ -17,6 +18,9 @@ interface ReviewListProps {
   onReviewDelete: (reviewId: string) => void;
   onCommentEdit: (commentId: string, content: string, reviewId: string) => void;
   onCommentDelete: (commentId: string, reviewId: string) => void;
+  onLoadMore: () => void;
+  hasMore: boolean;
+  isLoading: boolean;
 }
 
 const CONDITION_COLORS: Record<string, string> = {
@@ -35,9 +39,15 @@ const formatDate = (dateString: string) => {
   return date.toISOString().split('T')[0];
 };
 
-export const ReviewList = ({ reviews, comments, currentUserId, currentUserName, onClose, onBack, onCommentSubmit, onReviewEdit, onReviewDelete, onCommentEdit, onCommentDelete }: ReviewListProps) => {
+export const ReviewList = ({ reviews, comments, currentUserId, currentUserName, onClose, onBack, onCommentSubmit, onReviewEdit, onReviewDelete, onCommentEdit, onCommentDelete, onLoadMore, hasMore, isLoading }: ReviewListProps) => {
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
+
+  const loadMoreRef = useInfiniteScroll({
+    onLoadMore,
+    hasMore,
+    isLoading,
+  });
 
   const handleEditReview = (reviewId: string, currentContent: string) => {
     setEditingReviewId(reviewId);
@@ -215,6 +225,23 @@ export const ReviewList = ({ reviews, comments, currentUserId, currentUserName, 
                   />
                 </div>
               ))
+            )}
+
+            {/* 무한스크롤 트리거 */}
+            {hasMore && (
+              <div ref={loadMoreRef} style={{ height: '20px', margin: '20px 0' }}>
+                {isLoading && (
+                  <div style={{ textAlign: 'center', color: '#6B7280' }}>
+                    리뷰를 불러오는 중...
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!hasMore && reviews.length > 0 && (
+              <div style={{ textAlign: 'center', color: '#6B7280', padding: '20px' }}>
+                모든 리뷰를 불러왔습니다.
+              </div>
             )}
           </div>
         </div>

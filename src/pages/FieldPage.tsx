@@ -19,7 +19,7 @@ import L from 'leaflet';
 const customIcon = new L.Icon({
   iconUrl: 'data:image/svg+xml;base64,' + btoa(`
     <svg width="58" height="76" viewBox="0 0 58 76" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M29 0C13.0132 0 0 13.0132 0 29C0 50.75 29 75.2236 29 75.2236C29 75.2236 58 50.75 58 29C58 13.0132 44.9868 0 29 0ZM29 39.3421C23.2868 39.3421 18.6579 34.7132 18.6579 29C18.6579 23.2868 23.2868 18.6579 29 18.6579C34.7132 18.6579 39.3421 23.2868 39.3421 29C39.3421 34.7132 34.7132 39.3421 29 39.3421Z" fill="black"/>
+      <path d="M29 0C13.0132 0 0 13.0132 0 29C0 50.75 29 75.2236 29 75.2236C29 75.2236 58 50.75 58 29C58 13.0132 44.9868 0 29 0ZM29 39.3421C23.2868 39.3421 18.6579 34.7132 18.6579 29C18.6579 23.2868 23.2868 18.6579 29 18.6579C34.7132 18.6579 39.3421 23.2868 39.3421 29C39.3421 34.7132 34.7132 39.3421 29 39.3421Z" fill="#10b981"/>
     </svg>
   `),
   iconSize: [40, 53],
@@ -46,6 +46,8 @@ export const FieldPage = () => {
   const [comments, setComments] = useState<CommentData[]>([]);
   const [showAddFieldModal, setShowAddFieldModal] = useState(false);
   const [isLoadingFields, setIsLoadingFields] = useState(true);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [hasMoreReviews, setHasMoreReviews] = useState(true);
   const mapRef = useRef<L.Map | null>(null);
 
   // 백엔드에서 축구장 목록 가져오기
@@ -103,8 +105,11 @@ export const FieldPage = () => {
     setSelectedField(field);
 
     try {
-      // 리뷰 가져오기
+      // 리뷰 가져오기 (처음 로드)
       const fetchedReviews = await reviewApi.getReviewsByFieldId(field.id);
+
+      // 10개 미만이면 더 이상 로드할 리뷰가 없음
+      setHasMoreReviews(fetchedReviews.length >= 10);
 
       // 댓글 가져오기
       const allComments = await Promise.all(
@@ -218,8 +223,8 @@ export const FieldPage = () => {
         shoeLink: reviewData.shoeLink,
       });
 
-      // 리뷰 추가
-      setReviews([...reviews, createdReview]);
+      // 리뷰 추가 (최신 리뷰가 맨 위로)
+      setReviews([createdReview, ...reviews]);
 
       // 해당 필드의 평점 업데이트
       setFields(
@@ -340,6 +345,38 @@ export const FieldPage = () => {
     } catch (error) {
       console.error('Failed to delete comment:', error);
       alert('댓글 삭제에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
+
+  const handleLoadMoreReviews = async () => {
+    if (!selectedField || isLoadingReviews || !hasMoreReviews) return;
+
+    try {
+      setIsLoadingReviews(true);
+
+      // 마지막 리뷰 ID 가져오기
+      const lastReviewId = reviews.length > 0 ? parseInt(reviews[reviews.length - 1].id) : undefined;
+
+      // 추가 리뷰 가져오기
+      const newReviews = await reviewApi.getReviewsByFieldId(selectedField.id, lastReviewId);
+
+      // 새로운 리뷰의 댓글 가져오기
+      const newComments = await Promise.all(
+        newReviews.map((review: ReviewData) => commentApi.getCommentsByReviewId(review.id))
+      );
+      const flattenedNewComments = newComments.flat();
+
+      // 리뷰와 댓글 추가
+      setReviews([...reviews, ...newReviews]);
+      setComments([...comments, ...flattenedNewComments]);
+
+      // 10개 미만이면 더 이상 로드할 리뷰가 없음
+      setHasMoreReviews(newReviews.length >= 10);
+    } catch (error) {
+      console.error('Failed to load more reviews:', error);
+      alert('추가 리뷰를 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoadingReviews(false);
     }
   };
 
@@ -474,6 +511,9 @@ export const FieldPage = () => {
           onReviewDelete={handleReviewDelete}
           onCommentEdit={handleCommentEdit}
           onCommentDelete={handleCommentDelete}
+          onLoadMoreReviews={handleLoadMoreReviews}
+          hasMoreReviews={hasMoreReviews}
+          isLoadingReviews={isLoadingReviews}
         />
       )}
 

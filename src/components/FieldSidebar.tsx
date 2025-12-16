@@ -19,9 +19,12 @@ interface FieldSidebarProps {
   onReviewDelete: (reviewId: string) => void;
   onCommentEdit: (commentId: string, content: string, reviewId: string) => void;
   onCommentDelete: (commentId: string, reviewId: string) => void;
+  onLoadMoreReviews: () => void;
+  hasMoreReviews: boolean;
+  isLoadingReviews: boolean;
 }
 
-export const FieldSidebar = ({ field, reviews, comments, currentUserId, currentUserName, onClose, onReviewSubmit, onCommentSubmit, onReviewEdit, onReviewDelete, onCommentEdit, onCommentDelete }: FieldSidebarProps) => {
+export const FieldSidebar = ({ field, reviews, comments, currentUserId, currentUserName, onClose, onReviewSubmit, onCommentSubmit, onReviewEdit, onReviewDelete, onCommentEdit, onCommentDelete, onLoadMoreReviews, hasMoreReviews, isLoadingReviews }: FieldSidebarProps) => {
   const totalReviews = Object.values(field.rating.distribution).reduce((a, b) => a + b, 0);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showReviewList, setShowReviewList] = useState(false);
@@ -47,6 +50,9 @@ export const FieldSidebar = ({ field, reviews, comments, currentUserId, currentU
         onReviewDelete={onReviewDelete}
         onCommentEdit={onCommentEdit}
         onCommentDelete={onCommentDelete}
+        onLoadMore={onLoadMoreReviews}
+        hasMore={hasMoreReviews}
+        isLoading={isLoadingReviews}
       />
     );
   }
@@ -61,7 +67,18 @@ export const FieldSidebar = ({ field, reviews, comments, currentUserId, currentU
 
         {/* 축구장 이미지 */}
         <div className="field-image-container">
-          <img src={field.image} alt={field.name} className="field-image" />
+          <img
+            src={field.image}
+            alt={field.name}
+            className="field-image"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              // 이미 폴백 이미지인 경우 무한 루프 방지
+              if (!target.src.includes('unsplash.com')) {
+                target.src = 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&h=600&fit=crop';
+              }
+            }}
+          />
         </div>
 
         {/* 축구장 이름 */}
